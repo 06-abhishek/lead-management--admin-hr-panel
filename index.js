@@ -13,6 +13,10 @@ app.get("/", (req, res) => {
   res.send("Welcome to Service Engineer Application");
 });
 
+// 1-4: Admin Authentication
+const adminAuthRoutes = require("./routes/adminAuthRoutes");
+app.use("/api/auth", adminAuthRoutes);
+
 // 5: Dashboard
 const dashboardRoutes = require("./routes/dashboardRoutes");
 app.use("/api/dashboard", dashboardRoutes);
