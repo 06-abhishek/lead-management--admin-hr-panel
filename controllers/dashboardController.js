@@ -1,5 +1,6 @@
 const Employee = require("../models/Employee");
 const Project = require("../models/Project");
+const Admin = require("../models/Admin");
 
 // Search on Dashboard
 exports.searchDashboard = async (req, res) => {
@@ -9,7 +10,7 @@ exports.searchDashboard = async (req, res) => {
       return res.status(400).json({ message: "Search query is required." });
 
     const employees = await Employee.find({
-      name: { $regex: query, $options: "i" },
+      fullName: { $regex: query, $options: "i" },
     });
     const projects = await Project.find({
       title: { $regex: query, $options: "i" },
@@ -24,10 +25,7 @@ exports.searchDashboard = async (req, res) => {
 // Get Admin Profile
 exports.getAdminProfile = async (req, res) => {
   try {
-    // Assuming the admin is always the first document in the Employee collection with role "admin"
-    const admin = await Employee.findOne({ role: "admin" }).select(
-      "name role profilePicture"
-    );
+    const admin = await Admin.findOne().select("name role profilePhoto");
 
     if (!admin) {
       return res.status(404).json({ message: "Admin profile not found." });
@@ -103,22 +101,93 @@ exports.getDashboardStats = async (req, res) => {
 // Get Employee Performance Graph Data
 exports.getEmployeePerformance = async (req, res) => {
   try {
-    const { filter } = req.query; // today, daily, weekly, monthly
-    let startDate = new Date();
+    const { filter } = req.query; // "daily", "weekly", "monthly"
+    let startDate, endDate, groupByFormat, incrementDate;
 
-    if (filter === "daily") startDate.setDate(startDate.getDate() - 1);
-    else if (filter === "weekly") startDate.setDate(startDate.getDate() - 7);
-    else if (filter === "monthly") startDate.setMonth(startDate.getMonth() - 1);
+    const today = new Date();
+    if (filter === "daily") {
+      startDate = new Date(today);
+      startDate.setDate(today.getDate() - 29); // Last 30 days
+      groupByFormat = "%Y-%m-%d";
+      incrementDate = (date) => {
+        date.setDate(date.getDate() + 1);
+        return date;
+      };
+    } else if (filter === "weekly") {
+      startDate = new Date(today);
+      startDate.setDate(today.getDate() - 83); // Last 12 weeks
+      groupByFormat = "%Y-%U"; // Year-Week number
+      incrementDate = (date) => {
+        date.setDate(date.getDate() + 7);
+        return date;
+      };
+    } else if (filter === "monthly") {
+      startDate = new Date(today.getFullYear(), today.getMonth() - 11, 1); // Last 12 months
+      groupByFormat = "%Y-%m";
+      incrementDate = (date) => {
+        date.setMonth(date.getMonth() + 1);
+        return date;
+      };
+    } else {
+      return res.status(400).json({
+        message: "Invalid filter type. Use 'daily', 'weekly', or 'monthly'.",
+      });
+    }
 
+    endDate = new Date(); // Current date
+
+    // Fetch data from DB
     const performanceData = await Employee.aggregate([
-      { $match: { lastUpdated: { $gte: startDate } } },
-      { $group: { _id: null, avgPerformance: { $avg: "$performance" } } },
+      { $match: { lastUpdated: { $gte: startDate, $lte: endDate } } },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: groupByFormat, date: "$lastUpdated" },
+          },
+          averagePerformance: { $avg: "$performance" },
+        },
+      },
+      { $sort: { _id: 1 } },
     ]);
 
+    // Fill missing dates with 0 performance
+    const result = [];
+    let dateIterator = new Date(startDate);
+
+    while (dateIterator <= endDate) {
+      let formattedDate;
+      if (filter === "daily") {
+        formattedDate = dateIterator.toISOString().split("T")[0];
+      } else if (filter === "weekly") {
+        formattedDate = `${dateIterator.getFullYear()}-${Math.ceil(
+          dateIterator.getDate() / 7
+        )}`;
+      } else if (filter === "monthly") {
+        formattedDate = `${dateIterator.getFullYear()}-${(
+          dateIterator.getMonth() + 1
+        )
+          .toString()
+          .padStart(2, "0")}`;
+      }
+
+      const existingData = performanceData.find(
+        (item) => item._id === formattedDate
+      );
+      result.push({
+        date: formattedDate,
+        averagePerformance: existingData ? existingData.averagePerformance : 0,
+      });
+
+      dateIterator = incrementDate(dateIterator);
+    }
+
     res.status(200).json({
-      performance: performanceData[0]?.avgPerformance || 0,
+      message: "Employee performance data fetched successfully.",
+      data: result,
     });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching performance data", error });
+    res
+      .status(500)
+      .json({ message: "Internal Server Error", error: error.message });
   }
 };

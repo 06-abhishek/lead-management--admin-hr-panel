@@ -1,3 +1,4 @@
+const Admin = require("../models/Admin");
 const Employee = require("../models/Employee");
 const { sendEmail } = require("../utils/sendOTP");
 
@@ -24,9 +25,8 @@ exports.searchSeniorOnboarding = async (req, res) => {
 // Get Admin Profile
 exports.getAdminProfile = async (req, res) => {
   try {
-    const admin = await Employee.findOne({ position: "Admin" }).select(
-      "fullName position email profilePic"
-    );
+    const admin = await Admin.findOne().select("name role profilePhoto");
+
     if (!admin)
       return res.status(404).json({ message: "Admin profile not found." });
 
@@ -43,7 +43,7 @@ exports.addSeniorEmployee = async (req, res) => {
       fullName,
       employeeId,
       department,
-      position,
+      role,
       email,
       phone,
       joinDate,
@@ -55,7 +55,7 @@ exports.addSeniorEmployee = async (req, res) => {
       !fullName ||
       !employeeId ||
       !department ||
-      !position ||
+      !role ||
       !email ||
       !phone ||
       !joinDate ||
@@ -69,7 +69,8 @@ exports.addSeniorEmployee = async (req, res) => {
       fullName,
       employeeId,
       department,
-      position,
+      role,
+      position: "senior",
       email,
       phone,
       joinDate,
@@ -93,15 +94,15 @@ exports.addSeniorEmployee = async (req, res) => {
 // Send Credentials via Email (Using Existing Utility)
 exports.sendCredentials = async (req, res) => {
   try {
-    const { email, username, password } = req.body;
-    if (!email || !username || !password) {
+    const { email, username, fullName, password } = req.body;
+    if (!email || !username || !password || !fullName) {
       return res
         .status(400)
-        .json({ message: "Email, username, and password are required." });
+        .json({ message: "Email, username, fullName, and password are required." });
     }
 
     const subject = "Your Senior Employee Account Credentials";
-    const message = `Hello,\n\nYour account has been created successfully.\n\nUsername: ${username}\nPassword: ${password}\n\nPlease login and change your password.\n\nBest Regards, Admin`;
+    const message = `Hello ${fullName},\n\nYour account has been created successfully.\n\nUsername: ${username}\nPassword: ${password}\n\nPlease login and change your password.\n\nBest Regards, Admin`;
 
     await sendEmail(email, subject, message);
     res.status(200).json({ message: "Credentials sent successfully." });
@@ -117,7 +118,7 @@ exports.getRecentOnboardings = async (req, res) => {
       position: { $regex: "senior", $options: "i" },
     })
       .sort({ createdAt: -1 })
-      .limit(10);
+      .limit(4);
 
     res.status(200).json(recentOnboardings);
   } catch (error) {

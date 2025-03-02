@@ -7,9 +7,8 @@ router.get("/admin-profile", employeeAccountController.getAdminProfile);
 
 router.get("/stats", employeeAccountController.getAccountStats);
 
-router.get("/status-search", employeeAccountController.searchEmployeeStatus);
-router.post("/batch-activate", employeeAccountController.batchActivateEmployees);
-router.post("/batch-deactivate", employeeAccountController.batchDeactivateEmployees);
+router.get("/activated-employees-status-search", employeeAccountController.searchActivateEmployeeStatus);
+router.get("/deactivated-employees-status-search", employeeAccountController.searchDeactivateEmployeeStatus);
 
 router.put("/update-profile/:employeeId", employeeAccountController.updateEmployeeProfile);
 router.put("/update-status/:employeeId", employeeAccountController.updateEmployeeStatus);

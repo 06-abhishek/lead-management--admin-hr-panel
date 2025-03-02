@@ -1,3 +1,4 @@
+const Admin = require("../models/Admin");
 const Employee = require("../models/Employee");
 const ActivityLog = require("../models/ActivityLog");
 
@@ -23,9 +24,8 @@ exports.searchEmployeeAccount = async (req, res) => {
 // Get Admin Profile
 exports.getAdminProfile = async (req, res) => {
   try {
-    const admin = await Employee.findOne({ position: "Admin" }).select(
-      "fullName position email profilePic"
-    );
+    const admin = await Admin.findOne().select("name role profilePhoto");
+
     if (!admin)
       return res.status(404).json({ message: "Admin profile not found." });
 
@@ -59,7 +59,7 @@ exports.getAccountStats = async (req, res) => {
 };
 
 // Employee Status Controller (Search & Pagination)
-exports.searchEmployeeStatus = async (req, res) => {
+exports.searchActivateEmployeeStatus = async (req, res) => {
   try {
     const {
       name,
@@ -70,7 +70,7 @@ exports.searchEmployeeStatus = async (req, res) => {
       page = 1,
       limit = 10,
     } = req.query;
-    let filter = {};
+    let filter = { status: "active" };
 
     if (name) filter.fullName = { $regex: name, $options: "i" };
     if (id) filter.employeeId = id;
@@ -93,41 +93,38 @@ exports.searchEmployeeStatus = async (req, res) => {
   }
 };
 
-// Batch Activate Employees
-exports.batchActivateEmployees = async (req, res) => {
+// Employee Status Controller (Search & Pagination)
+exports.searchDeactivateEmployeeStatus = async (req, res) => {
   try {
-    const { employeeIds } = req.body;
-    if (!employeeIds || employeeIds.length === 0) {
-      return res.status(400).json({ message: "Employee IDs are required." });
-    }
+    const {
+      name,
+      id,
+      email,
+      department,
+      status,
+      page = 1,
+      limit = 10,
+    } = req.query;
+    let filter = { status: "inactive" };
 
-    await Employee.updateMany(
-      { employeeId: { $in: employeeIds } },
-      { status: "active" }
-    );
+    if (name) filter.fullName = { $regex: name, $options: "i" };
+    if (id) filter.employeeId = id;
+    if (email) filter.email = email;
+    if (department) filter.department = department;
+    if (status) filter.status = status;
 
-    res.status(200).json({ message: "Employees activated successfully." });
+    const employees = await Employee.find(filter)
+      .select("fullName employeeId profilePic department lastActive status")
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .exec();
+
+    const totalResults = await Employee.countDocuments(filter);
+    const totalPages = Math.ceil(totalResults / limit);
+
+    res.status(200).json({ employees, totalResults, totalPages, page });
   } catch (error) {
-    res.status(500).json({ message: "Error activating employees", error });
-  }
-};
-
-// Batch Deactivate Employees
-exports.batchDeactivateEmployees = async (req, res) => {
-  try {
-    const { employeeIds } = req.body;
-    if (!employeeIds || employeeIds.length === 0) {
-      return res.status(400).json({ message: "Employee IDs are required." });
-    }
-
-    await Employee.updateMany(
-      { employeeId: { $in: employeeIds } },
-      { status: "inactive" }
-    );
-
-    res.status(200).json({ message: "Employees deactivated successfully." });
-  } catch (error) {
-    res.status(500).json({ message: "Error deactivating employees", error });
+    res.status(500).json({ message: "Error searching employees", error });
   }
 };
 
@@ -161,7 +158,7 @@ exports.updateEmployeeProfile = async (req, res) => {
 exports.updateEmployeeStatus = async (req, res) => {
   try {
     const { employeeId } = req.params;
-    const { status, reason, effectiveDate, comments } = req.body;
+    const { status } = req.body;
 
     const employee = await Employee.findOneAndUpdate(
       { employeeId },
@@ -172,16 +169,6 @@ exports.updateEmployeeStatus = async (req, res) => {
     if (!employee) {
       return res.status(404).json({ message: "Employee not found." });
     }
-
-    // Log Activity
-    const log = new ActivityLog({
-      activityName: "Status Update",
-      employeeId,
-      employeeName: employee.fullName,
-      modifiedBy: "Admin",
-      reason,
-    });
-    await log.save();
 
     res
       .status(200)
@@ -238,7 +225,7 @@ exports.submitStatusUpdate = async (req, res) => {
 // Get Recent Activity Logs
 exports.getRecentLogs = async (req, res) => {
   try {
-    const logs = await ActivityLog.find().sort({ modifiedAt: -1 }).limit(10);
+    const logs = await ActivityLog.find().sort({ modifiedAt: -1 }).limit(5);
     res.status(200).json(logs);
   } catch (error) {
     res.status(500).json({ message: "Error fetching recent logs", error });
