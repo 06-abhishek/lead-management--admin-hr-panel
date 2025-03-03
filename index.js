@@ -35,11 +35,17 @@ app.use("/api/employee-account-management", employeeAccountManagementRoutes);
 
 // 9: Employee Activation Management
 const employeeActivationManagementRoutes = require("./routes/employeeActivationManagementRoutes");
-app.use("/api/employee-activation-management", employeeActivationManagementRoutes);
+app.use(
+  "/api/employee-activation-management",
+  employeeActivationManagementRoutes
+);
 
 // 10-12: Employee Deactivation Management, Process Deactivation, Mark as Completed
 const employeeDeactivationManagementRoutes = require("./routes/employeeDeactivationManagementRoutes");
-app.use("/api/employee-deactivation-management", employeeDeactivationManagementRoutes);
+app.use(
+  "/api/employee-deactivation-management",
+  employeeDeactivationManagementRoutes
+);
 
 // 13: Intern Assigned Work
 const internAssignedWorkRoutes = require("./routes/internAssignedWorkRoutes");
@@ -52,6 +58,10 @@ app.use("/api/notification", notificationRoutes);
 // 15: Settings
 const settingsRoutes = require("./routes/settingsRoutes");
 app.use("/api/settings", settingsRoutes);
+
+// Other Feature: Search and Admin Profile
+const otherFeaturesRoutes = require("./routes/otherFeaturesRoutes");
+app.use("/api/features", otherFeaturesRoutes);
 
 app.listen(port, () => {
   console.log(`App is listening on port ${port}`);
