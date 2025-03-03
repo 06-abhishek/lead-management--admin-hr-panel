@@ -20,9 +20,10 @@ const employeeSchema = new mongoose.Schema(
     joinDate: { type: Date },
     status: {
       type: String,
-      enum: ["active", "inactive", "pending", "rejected", "deactivated", "deactivation completed"],
+      enum: ["active", "inactive", "rejected", "deactivated", "pending"],
       default: "pending",
     },
+    isApproved: { type: Boolean, default: false },
     activationDate: { type: Date },
     deactivationDate: { type: Date },
 

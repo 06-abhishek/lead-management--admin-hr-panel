@@ -125,3 +125,18 @@ exports.verifyOtp = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+// Clear the authentication cookie on ServiceEngineer's Sign Out
+exports.signOut = async (req, res) => {
+  try {
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+    });
+
+    res.status(200).json({ message: "Successfully signed out" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};

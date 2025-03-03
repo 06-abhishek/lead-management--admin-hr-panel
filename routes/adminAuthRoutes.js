@@ -8,5 +8,6 @@ router.post("/signup", upload.single("profilePhoto"), adminAuthController.signUp
 router.post("/login", adminAuthController.login);
 router.post("/forgot-password", adminAuthController.forgotPassword);
 router.post("/verify-otp", adminAuthController.verifyOtp);
+router.post("/signout", adminAuthController.signOut);
 
 module.exports = router;

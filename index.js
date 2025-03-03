@@ -13,7 +13,7 @@ app.get("/", (req, res) => {
   res.send("Welcome to Service Engineer Application");
 });
 
-// 1-4: Admin Authentication
+// 1-4 & 16: Admin Authentication
 const adminAuthRoutes = require("./routes/adminAuthRoutes");
 app.use("/api/auth", adminAuthRoutes);
 
@@ -40,6 +40,18 @@ app.use("/api/employee-activation-management", employeeActivationManagementRoute
 // 10-12: Employee Deactivation Management, Process Deactivation, Mark as Completed
 const employeeDeactivationManagementRoutes = require("./routes/employeeDeactivationManagementRoutes");
 app.use("/api/employee-deactivation-management", employeeDeactivationManagementRoutes);
+
+// 13: Intern Assigned Work
+const internAssignedWorkRoutes = require("./routes/internAssignedWorkRoutes");
+app.use("/api/intern-assigned-work", internAssignedWorkRoutes);
+
+// 15: Notification
+const notificationRoutes = require("./routes/notificationRoutes");
+app.use("/api/notification", notificationRoutes);
+
+// 15: Settings
+const settingsRoutes = require("./routes/settingsRoutes");
+app.use("/api/settings", settingsRoutes);
 
 app.listen(port, () => {
   console.log(`App is listening on port ${port}`);

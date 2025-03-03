@@ -63,7 +63,7 @@ exports.markDeactivationCompleted = async (req, res) => {
     const { id } = req.params;
     const employee = await Employee.findByIdAndUpdate(
       id,
-      { status: "deactivation completed" },
+      { status: "deactivated" },
       { new: true }
     );
     if (!employee)
