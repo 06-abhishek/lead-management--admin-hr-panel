@@ -25,13 +25,21 @@ app.use("/api/dashboard", dashboardRoutes);
 const seniorOnboardingRoutes = require("./routes/seniorOnboardingRoutes");
 app.use("/api/senior-onboarding", seniorOnboardingRoutes);
 
-// 6: Intern Onboarding
+// 7: Intern Onboarding
 const internOnboardingRoutes = require("./routes/internOnboardingRoutes");
 app.use("/api/intern-onboarding", internOnboardingRoutes);
 
-// 7: Employee Account Management
+// 8: Employee Account Management
 const employeeAccountManagementRoutes = require("./routes/employeeAccountManagementRoutes");
 app.use("/api/employee-account-management", employeeAccountManagementRoutes);
+
+// 9: Employee Activation Management
+const employeeActivationManagementRoutes = require("./routes/employeeActivationManagementRoutes");
+app.use("/api/employee-activation-management", employeeActivationManagementRoutes);
+
+// 10-12: Employee Deactivation Management, Process Deactivation, Mark as Completed
+const employeeDeactivationManagementRoutes = require("./routes/employeeDeactivationManagementRoutes");
+app.use("/api/employee-deactivation-management", employeeDeactivationManagementRoutes);
 
 app.listen(port, () => {
   console.log(`App is listening on port ${port}`);
