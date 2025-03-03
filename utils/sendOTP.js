@@ -24,23 +24,4 @@ const sendEmail = async (email, subject, message) => {
   }
 };
 
-const twilioClient = twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
-
-const sendPhoneOtp = async (phone, otp) => {
-  try {
-    await twilioClient.messages.create({
-      body: `Your OTP is ${otp}`,
-      from: process.env.TWILIO_PHONE_NUMBER,
-      to: phone,
-    });
-    console.log(`Phone OTP sent to ${phone}`);
-  } catch (error) {
-    console.error("Error sending phone OTP:", error);
-    throw new Error("Failed to send phone OTP");
-  }
-};
-
-module.exports = { sendEmail, sendPhoneOtp };
+module.exports = { sendEmail };
