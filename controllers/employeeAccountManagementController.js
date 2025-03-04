@@ -132,12 +132,12 @@ exports.searchDeactivateEmployeeStatus = async (req, res) => {
 exports.updateEmployeeProfile = async (req, res) => {
   try {
     const { employeeId } = req.params;
-    const { fullName, department, position, email, phone, profilePic } =
+    const { fullName, department, position, email, phone, } =
       req.body;
 
     const updatedEmployee = await Employee.findOneAndUpdate(
       { employeeId },
-      { fullName, department, position, email, phone, profilePic },
+      { fullName, department, position, email, phone },
       { new: true }
     );
 

@@ -2,8 +2,8 @@ const express = require("express");
 const router = express.Router();
 const employeeAccountController = require("../controllers/employeeAccountManagementController");
 
-router.get("/search", employeeAccountController.searchEmployeeAccount);
-router.get("/admin-profile", employeeAccountController.getAdminProfile);
+// router.get("/search", employeeAccountController.searchEmployeeAccount);
+// router.get("/admin-profile", employeeAccountController.getAdminProfile);
 
 router.get("/stats", employeeAccountController.getAccountStats);
 
