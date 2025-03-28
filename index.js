@@ -10,7 +10,7 @@ const port = process.env.PORT || 4000;
 connectDB();
 
 app.get("/", (req, res) => {
-  res.send("Welcome to Service Engineer Application");
+  res.send("Welcome to Lead Management Server");
 });
 
 // 1-4 & 16: Admin Authentication
